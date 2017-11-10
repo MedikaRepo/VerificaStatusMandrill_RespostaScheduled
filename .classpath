@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/javax.mail-1.6.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/commons-io-1.3.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/httpclient-4.2.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/httpcore-4.2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/Mandrill/LibMandrill_lutung-0.0.7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/ConexaoSQL_sqljdbc4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/STI-004/Documents/ReferenciasJava/SankhyaW-extensions.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
