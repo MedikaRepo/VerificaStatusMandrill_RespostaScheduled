@@ -10,8 +10,6 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
-import jdk.nashorn.internal.runtime.Debug;
-
 public class VerificaResposta {
 
 
