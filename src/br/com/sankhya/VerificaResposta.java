@@ -10,11 +10,13 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+
 public class VerificaResposta {
 
 
-	public static String VerificaRespostaPop3(String host, String user, String password, String nunota) throws MessagingException
+	public static String VerificaRespostaPop3(String host, String user, String password, String nunota, String Apagar) throws MessagingException
 	{
+		if (Apagar == "N") { 
 		String retorno="";
 		//Verifica se teve resposta do cliente
 
@@ -34,6 +36,7 @@ public class VerificaResposta {
 
 			try
 			{
+				//store.connect("email-ssl.com.br", "adriano.soares@medika.com.br", "adrianomedika");
 				store.connect(host, user, password);
 
 				//create the folder object and open it
@@ -54,7 +57,7 @@ public class VerificaResposta {
 					{
 						String assunto=message.getSubject();
 						Assunto2=assunto;
-						if (assunto.contains("Re: Proposta Comercial")==false)
+						if (assunto.contains("Medika - Proposta Comercial")==false)
 						{
 							message.setFlag(Flags.Flag.DELETED, true);
 						//	System.out.println(assunto);
@@ -68,14 +71,15 @@ public class VerificaResposta {
 					Message message = messages[i];
 					String assunto=message.getSubject();
 
-						if(assunto.contains("Re: Proposta Comercial - "+nunota))
+						if(assunto.contains("Medika - Proposta Comercial - "+nunota))
 						{
 							retorno= "Respondido: "+ assunto+" - "+message.getSentDate().toString()+"\n"; 
+							message.setFlag(Flags.Flag.DELETED, true);
 						}
 				}
 				if(retorno=="")
 				{
-					//Se não encontrar o assunto do email completo com de resposta, busca só número da propsta
+					//Se nao encontrar o assunto do email completo com de resposta, busca so numero da proposta
 					for (int i = messages.length-1; i > 0; i--) 
 					{
 						Message message = messages[i];
@@ -86,7 +90,7 @@ public class VerificaResposta {
 						}
 						else
 						{
-							retorno="N�o respondido. \n";
+							retorno="";
 						}
 
 					}
@@ -125,6 +129,7 @@ public class VerificaResposta {
 			}
 			catch (Exception e)
 			{
+				System.out.println(e.getMessage());
 				CheckingMails.mensagem.append("Erro ao verificar resposta. "+e.getMessage());
 				//close the store and folder objects
 				emailFolder.close(true);
@@ -136,5 +141,53 @@ public class VerificaResposta {
 			CheckingMails.mensagem.append("Erro ao verificar resposta. "+e1.getMessage());
 		}
 		return retorno;
+		}
+		
+		//Apaga as mensagens apos a verificacao
+		else {
+			Properties properties = new Properties();
+
+			properties.put("mail.pop3.host", host);
+			properties.put("mail.pop3.port", "995");
+			properties.put("mail.pop3.starttls.enable", "true");
+			Session emailSession = Session.getInstance(properties);
+
+			//create the POP3 store object and connect with the pop server
+			Store store;
+			Folder emailFolder = null;
+			try {
+				store = emailSession.getStore("pop3s");
+
+				try
+				{
+					//store.connect("email-ssl.com.br", "adriano.soares@medika.com.br", "adrianomedika");
+					store.connect(host, user, password);
+
+					//create the folder object and open it
+					emailFolder = store.getFolder("INBOX");
+					emailFolder.open(Folder.READ_WRITE);
+
+					// retrieve the messages from the folder in an array and print it
+					Message[] messages = emailFolder.getMessages();
+
+					for (int i = messages.length-1; i > 0; i--) 
+					{
+						Message message = messages[i];
+
+						message.setFlag(Flags.Flag.DELETED, true);
+					}
+					emailFolder.close(true);
+					store.close();
+
+				}	catch (Exception e)
+				{
+					System.out.println(e.getMessage());
+				}
+			} catch (NoSuchProviderException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return "";
+		}
 	}
 }

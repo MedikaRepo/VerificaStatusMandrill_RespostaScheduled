@@ -29,18 +29,20 @@ public class CheckingMails implements ScheduledAction
 	static String username = "vendas@medika.com.br";// change accordingly
 	static String password = "M3dika2017";// change accordingly
 
-	public static Object ExecutaComandoNoBanco(String sql, String op)
+	public static Object ExecutaComandoNoBanco(String sql, String op, Statement smnt)
 	{
 		try
 		{
-			Statement smnt = ConnectMSSQLServer.conn.createStatement(); 
+			
 
 			if(op=="select")
 			{
 				smnt.execute(sql);
 				ResultSet result = smnt.executeQuery(sql); 
 				result.next();
-				return result.getObject(1);
+				Object retorno = result.getObject(1);
+				return retorno;
+
 			}
 			else if(op=="alter")
 			{
@@ -64,6 +66,7 @@ public class CheckingMails implements ScheduledAction
 	{
 
 		try {
+			Statement smnt = ConnectMSSQLServer.statement;
 			String statusEntrega=""; 
 			MandrillSearchMessageParams params=new MandrillSearchMessageParams();
 			MandrillMessagesApi mensagens = mandrillApi.messages();
@@ -71,85 +74,74 @@ public class CheckingMails implements ScheduledAction
 			String comando="";
 			comando="SELECT DISTINCT CAST(DHENVIO AS DATE) FROM AD_EMAILMONITOR WHERE " + 
 					" DHENVIO >GETDATE() -15 AND REMETENTE<>'' " +
+					" GROUP BY DHENVIO "+
 					" ORDER BY CAST(DHENVIO AS DATE) DESC";
 
 			System.out.println(comando);
 
-			smnt = ConnectMSSQLServer.conn.createStatement();
-
 			smnt.execute(comando);
 			ResultSet result = smnt.executeQuery(comando);
-
+			
 			try
 			{
-				while(result.next())
+				int cont = 0;
+				java.util.Date dia = new java.util.Date(); 
+				for(int i=0; i<15; i++)
 				{
-
-					params.setDateFrom(result.getDate(1));
-					params.setDateTo(result.getDate(1));
+					cont++;
+					System.out.println(cont);
+					dia.setDate(dia.getDate()-i);
+					
+					System.out.println(dia);
+					params.setDateFrom(dia);
+					params.setDateTo(dia);
+					params.setLimit(1000);
 
 					try
 					{
 						MandrillMessageInfo[] mmi= mandrillApi.messages().search(params);
-						String tagAnterior="";
 						for (int j = 0; j < mmi.length; j++) 
 						{
 
-							int tagPosicao=0;
+							System.out.println(mmi.length);
+							System.out.println(j);
+							int tagNunota=0;
 
-							if( mmi[j].getTags().size()==2)
-							{
-								tagAnterior=mmi[j].getTags().get( mmi[j].getTags().size()-2);
-								tagPosicao= mmi[j].getTags().size()-2;
+							tagNunota= mmi[j].getTags().size()-1;
+							resposta = "";
+							System.out.println(mmi[j].getTags().get(0));
+							resposta=VerificaResposta.VerificaRespostaPop3(host, username, password, mmi[j].getTags().get(tagNunota), "N");
+							
+							String comandoSelect;
+							comandoSelect = "SELECT RESPONDIDO FROM AD_EMAILMONITOR WHERE CODEMAILMONITOR = "+mmi[j].getTags().get(0);
+							String retornoSelect;
+							retornoSelect = (String) ExecutaComandoNoBanco(comandoSelect, "select", smnt);
+							if (retornoSelect != null){
+								retornoSelect = retornoSelect.replaceAll(" ", "");
+								retornoSelect = retornoSelect.replaceAll("\n", "");
 							}
-							else if( mmi[j].getTags().size()==3)
-							{
-								if(tagAnterior.equals(mmi[j].getTags().get(mmi[j].getTags().size()-2))) 
-								{
-									tagAnterior=mmi[j].getTags().get(mmi[j].getTags().size()-3);
-									tagPosicao=0;
-								}
-								else
-								{
-									tagAnterior=mmi[j].getTags().get(mmi[j].getTags().size()-2);
-									tagPosicao= mmi[j].getTags().size()-2;
-								}
+							if ((resposta != null) && (resposta != ""))  { 
+								String comando1;
+								comando1="update ad_emailmonitor set statusrecebimento='"+statusEntrega+
+										"', statusabertura= 'Aberto "+mmi[j].getOpens()+" vezes', statusclick="+
+										"'Clicado "+mmi[j].getClicks()+" vezes', respondido='"+resposta+
+										"', dhultatualizacao=getdate()"
+										+   " where codemailmonitor="+mmi[j].getTags().get(0);
+								System.out.println(comando1);
+
+								ExecutaComandoNoBanco(comando1, "alter", smnt);
+							}else  {
+								String comando1;
+								comando1="update ad_emailmonitor set statusrecebimento='"+statusEntrega+
+										"', statusabertura= 'Aberto "+mmi[j].getOpens()+" vezes', statusclick="+
+										"'Clicado "+mmi[j].getClicks()+" vezes',"+
+										" dhultatualizacao=getdate()"
+										+   " where codemailmonitor="+mmi[j].getTags().get(0);
+								System.out.println(comando1);
+
+								ExecutaComandoNoBanco(comando1, "alter", smnt);
 							}
 							
-							else if( mmi[j].getTags().size()==4)
-							{
-								if(tagAnterior.equals(mmi[j].getTags().get(mmi[j].getTags().size()-2))) 
-								{
-									tagAnterior=mmi[j].getTags().get(mmi[j].getTags().size()-3);
-									tagPosicao=0;
-								}
-								else if(tagAnterior.equals(mmi[j].getTags().get(mmi[j].getTags().size()-3)))
-								{
-									tagAnterior=mmi[j].getTags().get(mmi[j].getTags().size()-4);
-									tagPosicao=0;
-								}
-								else
-								{
-									tagAnterior=mmi[j].getTags().get( mmi[j].getTags().size()-2);
-									tagPosicao= mmi[j].getTags().size()-2;
-								}
-							}
-
-							resposta=VerificaResposta.VerificaRespostaPop3(host, username, password, mmi[j].getTags().get(tagPosicao));
-							System.out.println(mmi[j].getTags().get(tagPosicao));
-							if (resposta=="")
-							{
-								resposta="Não respondido.";
-							}
-							String comando1;
-							comando1="update ad_emailmonitor set statusrecebimento='"+statusEntrega+
-									"', statusabertura= 'Aberto "+mmi[j].getOpens()+" vezes', statusclick="+
-									"'Clicado "+mmi[j].getClicks()+" vezes', respondido='"+resposta+
-									"', dhultatualizacao=getdate()"
-									+   " where codemailmonitor="+mmi[j].getTags().get(tagPosicao);
-							System.out.println(comando1);
-
-							ExecutaComandoNoBanco(comando1, "alter");
 						}
 					}catch (Exception e) {
 						// TODO: handle exception
@@ -159,11 +151,13 @@ public class CheckingMails implements ScheduledAction
 					}
 				}
 				System.out.println("Fim da atualização de status do MailChimp.");
+				
+				resposta=VerificaResposta.VerificaRespostaPop3(host, username, password, "0", "S");
+				System.out.println("Mensagens Apagadas");
 			}catch (Exception e) {
 
 				System.out.println("Erro Mandrill. " + e.getMessage());
 			}
-			smnt.close();
 		}
 
 		catch (Exception e) {

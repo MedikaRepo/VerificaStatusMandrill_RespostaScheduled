@@ -9,6 +9,7 @@ import java.sql.Statement;
 public class ConnectMSSQLServer
 {
 	static Connection conn;
+	public static Statement statement;
 
 	public static void dbConnect(String db_connect_string,
 			String db_userid,
@@ -21,12 +22,13 @@ public class ConnectMSSQLServer
 
 				conn = DriverManager.getConnection(db_connect_string, db_userid, db_password);
 				System.out.println("connected");
-				Statement statement = conn.createStatement();
-				String queryString = "select * from sysobjects where type='u'";
-				ResultSet rs = statement.executeQuery(queryString);
-				while (rs.next()) {
+				conn.setAutoCommit(true);
+				statement = conn.createStatement();
+				//String queryString = "select * from sysobjects where type='u'";
+				//ResultSet rs = statement.executeQuery(queryString);
+				//while (rs.next()) {
 					//System.out.println(rs.getString(1));
-				}
+				//}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
