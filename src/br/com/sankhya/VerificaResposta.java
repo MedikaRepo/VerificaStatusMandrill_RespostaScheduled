@@ -90,7 +90,7 @@ public class VerificaResposta {
 						}
 						else
 						{
-							retorno="";
+							retorno=null;
 						}
 
 					}

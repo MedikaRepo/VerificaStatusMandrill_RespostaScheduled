@@ -120,7 +120,7 @@ public class CheckingMails implements ScheduledAction
 								retornoSelect = retornoSelect.replaceAll(" ", "");
 								retornoSelect = retornoSelect.replaceAll("\n", "");
 							}
-							if ((resposta != null) && (resposta != ""))  { 
+							if (resposta != null)  { 
 								String comando1;
 								comando1="update ad_emailmonitor set statusrecebimento='"+statusEntrega+
 										"', statusabertura= 'Aberto "+mmi[j].getOpens()+" vezes', statusclick="+
