@@ -108,7 +108,7 @@ public class CheckingMails implements ScheduledAction
 							int tagNunota=0;
 
 							tagNunota= mmi[j].getTags().size()-1;
-							resposta = "";
+							resposta = null;
 							System.out.println(mmi[j].getTags().get(0));
 							resposta=VerificaResposta.VerificaRespostaPop3(host, username, password, mmi[j].getTags().get(tagNunota), "N");
 							
